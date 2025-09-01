@@ -1,4 +1,4 @@
-# Block Future
+# Blockenspiel
 
 A 2D browser-based block-building game with a futuristic city setting.
 
@@ -22,7 +22,7 @@ A 2D browser-based block-building game with a futuristic city setting.
 
 ## Play Online
 
-Visit the [GitHub Pages deployment](https://username.github.io/block-future) to play!
+Visit the [GitHub Pages deployment](https://whilp.github.io/blockenspiel) to play!
 
 ## Local Development
 
