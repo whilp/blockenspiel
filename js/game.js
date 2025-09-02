@@ -10,6 +10,7 @@ class Game {
         this.selectedBlockType = 1;
         this.debugClick = null;
         
+
         // Game states
         this.GAME_STATES = {
             PLAYING: 'playing',
@@ -17,6 +18,8 @@ class Game {
         };
         this.currentState = this.GAME_STATES.PLAYING;
         this.savedPlayerPosition = null; // To restore player position when returning from logo
+        // Set safe spawn position after world generation
+        this.player.findSafeSpawnPosition(this.world);
         
         this.setupEventListeners();
         this.start();
@@ -24,6 +27,7 @@ class Game {
     
     setupEventListeners() {
         this.canvas.addEventListener('mousedown', (e) => {
+
             const rect = this.canvas.getBoundingClientRect();
             const canvasX = e.clientX - rect.left;
             const canvasY = e.clientY - rect.top;
@@ -50,8 +54,6 @@ class Game {
                     currentWorld.setBlock(hit.position.x, hit.position.y, 0, this.selectedBlockType);
                 }
             }
-            
-            setTimeout(() => { this.debugClick = null; }, 1000);
         });
         
         this.canvas.addEventListener('contextmenu', (e) => {
@@ -204,7 +206,8 @@ class Game {
             if (this.currentState === this.GAME_STATES.LOGO_SCREEN) {
                 biomeElement.textContent = `LOGO SCREEN | Press 'L' or ESC to return | Block: ${this.selectedBlockType}`;
             } else {
-                biomeElement.textContent = `Block: ${this.selectedBlockType} | On Ground: ${this.player.onGround} | Press 'L' for Logo`;
+                const wallMiningStatus = this.player.wallMiningEnabled ? 'ON' : 'OFF';
+                biomeElement.textContent = `Block: ${this.selectedBlockType} | On Ground: ${this.player.onGround} | Wall Mining: ${wallMiningStatus}  | Press 'L' for Logo`;
             }
         }
     }
