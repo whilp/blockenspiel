@@ -1,6 +1,6 @@
 class Player {
     constructor() {
-        this.position = new Vec3(0, 25, 0);
+        this.position = new Vec3(0, 25, 0); // Initial position, will be adjusted
         this.velocity = new Vec3(0, 0, 0);
         this.speed = 8;
         this.jumpPower = 12;
@@ -12,6 +12,28 @@ class Player {
         this.direction = 1; // 1 for right, -1 for left
         
         this.setupEventListeners();
+    }
+    
+    findSafeSpawnPosition(world) {
+        // Try multiple x positions to find one without buildings
+        const searchRange = 100; // Search within this range
+        const spawnY = 55; // Always spawn at Y-level 55
+        let bestSpawnX = 0;
+        
+        for (let testX = -searchRange; testX <= searchRange; testX += 5) {
+            // Check if there are any blocks at Y-level 55 (where we want to spawn)
+            let hasBlockAtSpawnLevel = world.getBlock(testX, spawnY, 0) > 0;
+            
+            // If no block at spawn level, this is a good spawn location
+            if (!hasBlockAtSpawnLevel) {
+                bestSpawnX = testX;
+                console.log('Found safe spawn location at x =', testX, 'y = 55');
+                break;
+            }
+        }
+        
+        this.position = new Vec3(bestSpawnX, spawnY, 0);
+        console.log('Player spawned at:', this.position);
     }
     
     setupEventListeners() {

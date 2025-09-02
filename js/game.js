@@ -9,6 +9,9 @@ class Game {
         this.selectedBlockType = 1;
         this.debugClick = null;
         
+        // Set safe spawn position after world generation
+        this.player.findSafeSpawnPosition(this.world);
+        
         this.setupEventListeners();
         this.start();
     }
