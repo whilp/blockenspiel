@@ -10,6 +10,7 @@ class Player {
         this.keys = {};
         this.lastMineTime = 0;
         this.direction = 1; // 1 for right, -1 for left
+        this.wallMiningEnabled = true; // Toggle for walking through walls
         
         this.setupEventListeners();
     }
@@ -39,6 +40,12 @@ class Player {
     setupEventListeners() {
         document.addEventListener('keydown', (e) => {
             this.keys[e.code.toLowerCase()] = true;
+            
+            // Toggle wall mining with T key
+            if (e.code === 'KeyT') {
+                this.wallMiningEnabled = !this.wallMiningEnabled;
+                console.log('Wall mining:', this.wallMiningEnabled ? 'ENABLED' : 'DISABLED');
+            }
         });
         
         document.addEventListener('keyup', (e) => {
@@ -73,20 +80,53 @@ class Player {
         const newX = this.position.x + this.velocity.x * deltaTime;
         const newY = this.position.y + this.velocity.y * deltaTime;
         
+        // Handle horizontal movement and block breaking
         if (!this.checkCollision(newX, this.position.y, world)) {
             this.position.x = newX;
         } else {
-            this.velocity.x = 0;
+            if (this.wallMiningEnabled) {
+                // Break blocks that are in the way of horizontal movement
+                this.breakBlocksInPath(newX, this.position.y, world);
+                this.position.x = newX; // Continue moving after breaking blocks
+            } else {
+                // Stop movement when hitting walls (normal collision)
+                this.velocity.x = 0;
+            }
         }
         
+        // Handle vertical movement and block breaking
         if (!this.checkCollision(this.position.x, newY, world)) {
             this.position.y = newY;
             this.onGround = false;
         } else {
             if (this.velocity.y < 0) {
+                // Don't auto-break blocks below - only break when S is pressed
                 this.onGround = true;
+                this.velocity.y = 0;
+            } else {
+                // Breaking blocks above when going up (jumping into ceiling)
+                this.breakBlocksInPath(this.position.x, newY, world);
+                this.position.y = newY;
             }
-            this.velocity.y = 0;
+        }
+    }
+    
+    breakBlocksInPath(x, y, world) {
+        const playerWidth = 0.8;
+        const playerHeight = 1.8;
+        
+        const minX = Math.floor(x - playerWidth / 2);
+        const maxX = Math.floor(x + playerWidth / 2);
+        const minY = Math.floor(y);
+        const maxY = Math.floor(y + playerHeight);
+        
+        for (let checkX = minX; checkX <= maxX; checkX++) {
+            for (let checkY = minY; checkY <= maxY; checkY++) {
+                if (world.getBlock(checkX, checkY, 0) > 0) {
+                    world.setBlock(checkX, checkY, 0, 0); // Break the block
+                    console.log('Block broken by walking at:', checkX, checkY);
+                }
+            }
         }
     }
     
