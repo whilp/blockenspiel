@@ -15,33 +15,56 @@ class Game {
     
     setupEventListeners() {
         this.canvas.addEventListener('mousedown', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            const canvasX = e.clientX - rect.left;
-            const canvasY = e.clientY - rect.top;
-            
-            this.debugClick = { x: canvasX, y: canvasY };
-            
-            const hit = this.player.getRaycastHit(this.world, e.clientX, e.clientY, this.canvas, this.renderer);
-            
-            console.log('Click:', { 
-                clientX: e.clientX, 
-                clientY: e.clientY, 
-                canvasX, 
-                canvasY, 
-                worldX: hit.position.x, 
-                worldY: hit.position.y,
-                camera: this.renderer.camera
-            });
-            
-            if (e.button === 0 && hit.hit) { // left click - remove block
-                this.world.setBlock(hit.position.x, hit.position.y, 0, 0);
-            } else if (e.button === 2) { // right click - place block
-                if (!hit.hit) {
-                    this.world.setBlock(hit.position.x, hit.position.y, 0, this.selectedBlockType);
+            if (e.button === 0) { // Left click only
+                // Get exact canvas coordinates
+                const rect = this.canvas.getBoundingClientRect();
+                const canvasX = e.clientX - rect.left;
+                const canvasY = e.clientY - rect.top;
+                
+                // Show red dot at click position
+                this.debugClick = { x: canvasX, y: canvasY };
+                
+                // Convert canvas coordinates to world block coordinates
+                const blockSize = this.renderer.blockSize;
+                const camera = this.renderer.camera;
+                const worldX = Math.floor((canvasX + camera.x) / blockSize);
+                const worldY = Math.floor((this.canvas.height - canvasY + camera.y) / blockSize) + 8;
+                
+                console.log('Left Click - Breaking Block:', { 
+                    canvasX, 
+                    canvasY, 
+                    worldX, 
+                    worldY,
+                    redDotX: this.debugClick.x,
+                    redDotY: this.debugClick.y
+                });
+                
+                // Break the block at the calculated world position
+                const blockType = this.world.getBlock(worldX, worldY, 0);
+                if (blockType > 0) {
+                    this.world.setBlock(worldX, worldY, 0, 0);
+                    console.log('Block broken at:', worldX, worldY);
+                } else {
+                    console.log('No block to break at:', worldX, worldY);
+                }
+                
+                // Keep red dot visible for 1 second
+                setTimeout(() => { this.debugClick = null; }, 1000);
+            } else if (e.button === 2) { // Right click - place block
+                const rect = this.canvas.getBoundingClientRect();
+                const canvasX = e.clientX - rect.left;
+                const canvasY = e.clientY - rect.top;
+                
+                const blockSize = this.renderer.blockSize;
+                const camera = this.renderer.camera;
+                const worldX = Math.floor((canvasX + camera.x) / blockSize);
+                const worldY = Math.floor((this.canvas.height - canvasY + camera.y) / blockSize) + 8;
+                
+                const blockType = this.world.getBlock(worldX, worldY, 0);
+                if (blockType === 0) {
+                    this.world.setBlock(worldX, worldY, 0, this.selectedBlockType);
                 }
             }
-            
-            setTimeout(() => { this.debugClick = null; }, 1000);
         });
         
         this.canvas.addEventListener('contextmenu', (e) => {
