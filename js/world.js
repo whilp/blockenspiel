@@ -47,6 +47,120 @@ class World {
         this.generateRoads();
         this.generateVehicles();
     }
+
+    generateLogoWorld() {
+        // Clear existing blocks
+        this.blocks.clear();
+        
+        // Create a flat platform for the logo
+        const platformWidth = 120;
+        const platformHeight = 25;
+        
+        for (let x = -platformWidth/2; x < platformWidth/2; x++) {
+            for (let y = 0; y <= platformHeight; y++) {
+                if (y <= 2) {
+                    this.setBlock(x, y, 0, 5); // bedrock
+                } else if (y === platformHeight) {
+                    this.setBlock(x, y, 0, 1); // grass
+                } else if (y >= platformHeight - 2) {
+                    this.setBlock(x, y, 0, 2); // dirt
+                } else {
+                    this.setBlock(x, y, 0, 3); // stone
+                }
+            }
+        }
+        
+        // Generate the BLOCKENSPIEL logo
+        this.generateLogoText();
+        
+        // Generate credits display
+        this.generateCreditsDisplay();
+    }
+
+    generateLogoText() {
+        if (typeof LogoPatterns === 'undefined') {
+            console.error('LogoPatterns not loaded');
+            return;
+        }
+        
+        console.log('Generating logo text...');
+        
+        const patterns = LogoPatterns.getLetterPatterns();
+        const getColor = LogoPatterns.getLetterColors();
+        const logoText = 'BLOCKENSPIEL';
+        
+        let currentX = -50; // Starting position for the logo
+        const baseY = 26; // Y position where logo will be placed (just above the platform at 25)
+        
+        for (let i = 0; i < logoText.length; i++) {
+            const letter = logoText[i];
+            const pattern = patterns[letter];
+            const blockType = getColor(letter, i, logoText);
+            
+            if (pattern) {
+                console.log(`Generating letter ${letter} at position ${currentX} with color ${blockType}`);
+                // Place blocks according to pattern
+                for (let row = 0; row < pattern.length; row++) {
+                    for (let col = 0; col < pattern[row].length; col++) {
+                        if (pattern[row][col] === 1) {
+                            // Pattern is drawn top-down, so we flip the Y coordinate
+                            const blockX = currentX + col;
+                            const blockY = baseY + (pattern.length - 1 - row);
+                            this.setBlock(blockX, blockY, 0, blockType);
+                        }
+                    }
+                }
+                
+                // Move to next letter position (letter width + spacing)
+                currentX += (pattern[0] ? pattern[0].length : 5) + 2;
+            } else {
+                console.log(`No pattern found for letter: ${letter}`);
+            }
+        }
+    }
+
+    generateCreditsDisplay() {
+        if (typeof LogoPatterns === 'undefined') {
+            console.error('LogoPatterns not loaded');
+            return;
+        }
+        
+        const credits = LogoPatterns.generateCredits();
+        const developers = ['Joe', 'Manu', 'Ev'];
+        const creditColors = [4, 11, 16]; // gold, crystal pink, window blue
+        
+        let startX = -45;
+        const creditY = 15; // Below the logo
+        
+        developers.forEach((dev, devIndex) => {
+            const devCredits = credits[dev];
+            const color = creditColors[devIndex];
+            
+            // Create a small title for the developer using blocks
+            const devName = dev.toUpperCase();
+            let nameX = startX;
+            
+            // Simple block representation for developer names
+            for (let i = 0; i < devName.length; i++) {
+                this.setBlock(nameX + i, creditY + 5, 0, color);
+                nameX++;
+            }
+            
+            // Create vertical columns of blocks representing their roles
+            // Each block represents multiple roles for space efficiency
+            const rolesPerColumn = Math.ceil(devCredits.length / 8);
+            for (let col = 0; col < 8; col++) {
+                const hasRoles = col * rolesPerColumn < devCredits.length;
+                if (hasRoles) {
+                    for (let row = 0; row < 3; row++) {
+                        this.setBlock(startX + col, creditY + row, 0, color);
+                    }
+                }
+            }
+            
+            startX += 35; // Move to next developer section
+        });
+    }
     
     generateCity() {
         for (let i = 0; i < 20; i++) {
