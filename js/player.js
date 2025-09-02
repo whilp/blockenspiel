@@ -99,11 +99,7 @@ class Player {
         }
     }
     
-    getRaycastHit(world, mouseX, mouseY, canvas, renderer) {
-        const rect = canvas.getBoundingClientRect();
-        const canvasX = mouseX - rect.left;
-        const canvasY = mouseY - rect.top;
-        
+    getRaycastHit(world, canvasX, canvasY, canvas, renderer) {
         const blockSize = renderer.blockSize;
         const camera = renderer.camera;
         
