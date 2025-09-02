@@ -39,13 +39,23 @@ class Renderer {
         this.canvas.height = this.height;
     }
     
-    clear() {
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, '#87CEEB'); // sky blue
-        gradient.addColorStop(0.7, '#98D8E8'); // lighter blue
-        gradient.addColorStop(1, '#B0E0E6'); // powder blue
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.width, this.height);
+    clear(isLogoScreen = false) {
+        if (isLogoScreen) {
+            // Special background for logo screen - darker, more dramatic
+            const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+            gradient.addColorStop(0, '#1a1a2e'); // dark blue
+            gradient.addColorStop(0.7, '#16213e'); // darker blue
+            gradient.addColorStop(1, '#0f3460'); // deep blue
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.width, this.height);
+        } else {
+            const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+            gradient.addColorStop(0, '#87CEEB'); // sky blue
+            gradient.addColorStop(0.7, '#98D8E8'); // lighter blue
+            gradient.addColorStop(1, '#B0E0E6'); // powder blue
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.width, this.height);
+        }
     }
     
     updateCamera(player) {
@@ -112,7 +122,8 @@ class Renderer {
     }
     
     render(world, player, game) {
-        this.clear();
+        const isLogoScreen = game.currentState === game.GAME_STATES.LOGO_SCREEN;
+        this.clear(isLogoScreen);
         this.updateCamera(player);
         
         const viewWidth = Math.ceil(this.width / this.blockSize) + 2;
@@ -132,10 +143,28 @@ class Renderer {
         this.drawPlayer(player);
         this.drawCrosshair();
         
+        // Add special visual effects for logo screen
+        if (isLogoScreen) {
+            this.drawLogoScreenEffects();
+        }
+        
         if (game.debugClick) {
             this.ctx.fillStyle = 'red';
             this.ctx.beginPath();
             this.ctx.arc(game.debugClick.x, game.debugClick.y, 5, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    drawLogoScreenEffects() {
+        // Add subtle sparkle effects around the screen edges
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        for (let i = 0; i < 20; i++) {
+            const x = Math.random() * this.width;
+            const y = Math.random() * this.height;
+            const size = Math.random() * 2 + 1;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size, 0, Math.PI * 2);
             this.ctx.fill();
         }
     }

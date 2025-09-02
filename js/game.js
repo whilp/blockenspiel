@@ -3,11 +3,20 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.renderer = new Renderer(this.canvas);
         this.world = new World();
+        this.logoWorld = null; // Will be initialized when needed
         this.player = new Player();
         this.lastTime = 0;
         this.isRunning = false;
         this.selectedBlockType = 1;
         this.debugClick = null;
+        
+        // Game states
+        this.GAME_STATES = {
+            PLAYING: 'playing',
+            LOGO_SCREEN: 'logo_screen'
+        };
+        this.currentState = this.GAME_STATES.PLAYING;
+        this.savedPlayerPosition = null; // To restore player position when returning from logo
         
         this.setupEventListeners();
         this.start();
@@ -21,7 +30,8 @@ class Game {
             
             this.debugClick = { x: canvasX, y: canvasY };
             
-            const hit = this.player.getRaycastHit(this.world, e.clientX, e.clientY, this.canvas, this.renderer);
+            const currentWorld = this.currentState === this.GAME_STATES.PLAYING ? this.world : (this.logoWorld || this.world);
+            const hit = this.player.getRaycastHit(currentWorld, e.clientX, e.clientY, this.canvas, this.renderer);
             
             console.log('Click:', { 
                 clientX: e.clientX, 
@@ -34,10 +44,10 @@ class Game {
             });
             
             if (e.button === 0 && hit.hit) { // left click - remove block
-                this.world.setBlock(hit.position.x, hit.position.y, 0, 0);
+                currentWorld.setBlock(hit.position.x, hit.position.y, 0, 0);
             } else if (e.button === 2) { // right click - place block
                 if (!hit.hit) {
-                    this.world.setBlock(hit.position.x, hit.position.y, 0, this.selectedBlockType);
+                    currentWorld.setBlock(hit.position.x, hit.position.y, 0, this.selectedBlockType);
                 }
             }
             
@@ -51,6 +61,16 @@ class Game {
         document.addEventListener('keydown', (e) => {
             if (e.code >= 'Digit1' && e.code <= 'Digit9') {
                 this.selectedBlockType = parseInt(e.code.slice(-1));
+            }
+            
+            // Toggle between game and logo screen with 'L' key
+            if (e.code === 'KeyL') {
+                this.toggleLogoScreen();
+            }
+            
+            // ESC key to return to main game from logo screen
+            if (e.code === 'Escape' && this.currentState === this.GAME_STATES.LOGO_SCREEN) {
+                this.switchToGame();
             }
         });
     }
@@ -105,12 +125,70 @@ class Game {
     }
     
     update(deltaTime) {
-        this.player.update(deltaTime, this.world);
+        if (this.currentState === this.GAME_STATES.PLAYING) {
+            this.player.update(deltaTime, this.world);
+        } else if (this.currentState === this.GAME_STATES.LOGO_SCREEN && this.logoWorld) {
+            this.player.update(deltaTime, this.logoWorld);
+        }
         this.updateUI();
     }
     
     render() {
-        this.renderer.render(this.world, this.player, this);
+        if (this.currentState === this.GAME_STATES.PLAYING) {
+            this.renderer.render(this.world, this.player, this);
+        } else if (this.currentState === this.GAME_STATES.LOGO_SCREEN && this.logoWorld) {
+            this.renderer.render(this.logoWorld, this.player, this);
+        }
+    }
+    
+    toggleLogoScreen() {
+        if (this.currentState === this.GAME_STATES.PLAYING) {
+            this.switchToLogoScreen();
+        } else {
+            this.switchToGame();
+        }
+    }
+    
+    switchToLogoScreen() {
+        // Save current player position
+        this.savedPlayerPosition = {
+            x: this.player.position.x,
+            y: this.player.position.y,
+            z: this.player.position.z
+        };
+        
+        // Initialize logo world if not already done
+        if (!this.logoWorld) {
+            this.logoWorld = new World();
+            this.logoWorld.generateLogoWorld();
+        }
+        
+        // Position player in logo world above the letters (logo is at Y=26-33, so spawn at Y=35)
+        this.player.position.x = 0;
+        this.player.position.y = 35;
+        this.player.position.z = 0;
+        this.player.velocity.x = 0;
+        this.player.velocity.y = 0;
+        this.player.velocity.z = 0;
+        this.player.onGround = false; // Let physics determine ground state
+        
+        this.currentState = this.GAME_STATES.LOGO_SCREEN;
+    }
+    
+    switchToGame() {
+        // Restore player position
+        if (this.savedPlayerPosition) {
+            this.player.position.x = this.savedPlayerPosition.x;
+            this.player.position.y = this.savedPlayerPosition.y;
+            this.player.position.z = this.savedPlayerPosition.z;
+        }
+        
+        this.player.velocity.x = 0;
+        this.player.velocity.y = 0;
+        this.player.velocity.z = 0;
+        this.player.onGround = false; // Let physics determine ground state
+        
+        this.currentState = this.GAME_STATES.PLAYING;
     }
     
     updateUI() {
@@ -123,7 +201,11 @@ class Game {
         }
         
         if (biomeElement) {
-            biomeElement.textContent = `Block: ${this.selectedBlockType} | On Ground: ${this.player.onGround}`;
+            if (this.currentState === this.GAME_STATES.LOGO_SCREEN) {
+                biomeElement.textContent = `LOGO SCREEN | Press 'L' or ESC to return | Block: ${this.selectedBlockType}`;
+            } else {
+                biomeElement.textContent = `Block: ${this.selectedBlockType} | On Ground: ${this.player.onGround} | Press 'L' for Logo`;
+            }
         }
     }
 }
