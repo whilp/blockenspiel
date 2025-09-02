@@ -83,7 +83,6 @@ class World {
             return;
         }
         
-        console.log('Generating logo text...');
         
         const patterns = LogoPatterns.getLetterPatterns();
         const getColor = LogoPatterns.getLetterColors();
@@ -98,7 +97,6 @@ class World {
             const blockType = getColor(letter, i, logoText);
             
             if (pattern) {
-                console.log(`Generating letter ${letter} at position ${currentX} with color ${blockType}`);
                 // Place blocks according to pattern
                 for (let row = 0; row < pattern.length; row++) {
                     for (let col = 0; col < pattern[row].length; col++) {
@@ -113,8 +111,6 @@ class World {
                 
                 // Move to next letter position (letter width + spacing)
                 currentX += (pattern[0] ? pattern[0].length : 5) + 2;
-            } else {
-                console.log(`No pattern found for letter: ${letter}`);
             }
         }
     }

@@ -76,23 +76,6 @@ class Renderer {
         
         this.ctx.fillStyle = color;
         this.ctx.fillRect(screenX, screenY, this.blockSize, this.blockSize);
-        
-        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeRect(screenX, screenY, this.blockSize, this.blockSize);
-        
-        if (blockType === 1) {
-            this.ctx.fillStyle = '#32CD32';
-            this.ctx.fillRect(screenX + 2, screenY + 2, this.blockSize - 4, 8);
-        } else if (blockType === 9) {
-            this.ctx.fillStyle = '#654321';
-            for (let i = 0; i < 3; i++) {
-                this.ctx.fillRect(screenX + 4 + i * 8, screenY + 4, 4, this.blockSize - 8);
-            }
-        } else if (blockType === 8) {
-            this.ctx.fillStyle = 'rgba(65, 105, 225, 0.8)';
-            this.ctx.fillRect(screenX, screenY, this.blockSize, this.blockSize);
-        }
     }
     
     drawPlayer(player) {
@@ -147,25 +130,16 @@ class Renderer {
         if (isLogoScreen) {
             this.drawLogoScreenEffects();
         }
-        
-        if (game.debugClick) {
-            this.ctx.fillStyle = 'red';
-            this.ctx.beginPath();
-            this.ctx.arc(game.debugClick.x, game.debugClick.y, 5, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
     }
 
     drawLogoScreenEffects() {
         // Add subtle sparkle effects around the screen edges
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        for (let i = 0; i < 20; i++) {
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        for (let i = 0; i < 10; i++) {
             const x = Math.random() * this.width;
             const y = Math.random() * this.height;
-            const size = Math.random() * 2 + 1;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, size, 0, Math.PI * 2);
-            this.ctx.fill();
+            const size = Math.random() * 1.5 + 0.5;
+            this.ctx.fillRect(x, y, size, size);
         }
     }
     

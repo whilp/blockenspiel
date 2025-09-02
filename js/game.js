@@ -8,7 +8,6 @@ class Game {
         this.lastTime = 0;
         this.isRunning = false;
         this.selectedBlockType = 1;
-        this.debugClick = null;
         
 
         // Game states
@@ -27,25 +26,9 @@ class Game {
     
     setupEventListeners() {
         this.canvas.addEventListener('mousedown', (e) => {
-
-            const rect = this.canvas.getBoundingClientRect();
-            const canvasX = e.clientX - rect.left;
-            const canvasY = e.clientY - rect.top;
-            
-            this.debugClick = { x: canvasX, y: canvasY };
             
             const currentWorld = this.currentState === this.GAME_STATES.PLAYING ? this.world : (this.logoWorld || this.world);
             const hit = this.player.getRaycastHit(currentWorld, e.clientX, e.clientY, this.canvas, this.renderer);
-            
-            console.log('Click:', { 
-                clientX: e.clientX, 
-                clientY: e.clientY, 
-                canvasX, 
-                canvasY, 
-                worldX: hit.position.x, 
-                worldY: hit.position.y,
-                camera: this.renderer.camera
-            });
             
             if (e.button === 0 && hit.hit) { // left click - remove block
                 currentWorld.setBlock(hit.position.x, hit.position.y, 0, 0);
@@ -79,19 +62,17 @@ class Game {
     
     getPlacePosition(hitPosition) {
         const directions = [
-            new Vec3(1, 0, 0), new Vec3(-1, 0, 0),
-            new Vec3(0, 1, 0), new Vec3(0, -1, 0),
-            new Vec3(0, 0, 1), new Vec3(0, 0, -1)
+            new Vec2(1, 0), new Vec2(-1, 0),
+            new Vec2(0, 1), new Vec2(0, -1)
         ];
         
         for (const dir of directions) {
             const placePos = hitPosition.add(dir);
-            if (this.world.getBlock(placePos.x, placePos.y, placePos.z) === 0) {
+            if (this.world.getBlock(placePos.x, placePos.y, 0) === 0) {
                 const playerPos = this.player.position;
                 const distance = Math.sqrt(
                     (placePos.x - playerPos.x) ** 2 +
-                    (placePos.y - playerPos.y) ** 2 +
-                    (placePos.z - playerPos.z) ** 2
+                    (placePos.y - playerPos.y) ** 2
                 );
                 
                 if (distance > 0.5) {
@@ -155,8 +136,7 @@ class Game {
         // Save current player position
         this.savedPlayerPosition = {
             x: this.player.position.x,
-            y: this.player.position.y,
-            z: this.player.position.z
+            y: this.player.position.y
         };
         
         // Initialize logo world if not already done
@@ -168,10 +148,8 @@ class Game {
         // Position player in logo world above the letters (logo is at Y=26-33, so spawn at Y=35)
         this.player.position.x = 0;
         this.player.position.y = 35;
-        this.player.position.z = 0;
         this.player.velocity.x = 0;
         this.player.velocity.y = 0;
-        this.player.velocity.z = 0;
         this.player.onGround = false; // Let physics determine ground state
         
         this.currentState = this.GAME_STATES.LOGO_SCREEN;
@@ -182,12 +160,10 @@ class Game {
         if (this.savedPlayerPosition) {
             this.player.position.x = this.savedPlayerPosition.x;
             this.player.position.y = this.savedPlayerPosition.y;
-            this.player.position.z = this.savedPlayerPosition.z;
         }
         
         this.player.velocity.x = 0;
         this.player.velocity.y = 0;
-        this.player.velocity.z = 0;
         this.player.onGround = false; // Let physics determine ground state
         
         this.currentState = this.GAME_STATES.PLAYING;
@@ -199,7 +175,7 @@ class Game {
         
         if (coordsElement) {
             const pos = this.player.position;
-            coordsElement.textContent = `X: ${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}, Z: ${pos.z.toFixed(1)}`;
+            coordsElement.textContent = `X: ${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}`;
         }
         
         if (biomeElement) {
