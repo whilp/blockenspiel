@@ -1,7 +1,7 @@
 class Player {
     constructor() {
-        this.position = new Vec3(0, 25, 0); // Initial position, will be adjusted
-        this.velocity = new Vec3(0, 0, 0);
+        this.position = new Vec2(0, 25); // Initial position, will be adjusted
+        this.velocity = new Vec2(0, 0);
         this.speed = 8;
         this.jumpPower = 12;
         this.jetpackPower = 15;
@@ -28,13 +28,11 @@ class Player {
             // If no block at spawn level, this is a good spawn location
             if (!hasBlockAtSpawnLevel) {
                 bestSpawnX = testX;
-                console.log('Found safe spawn location at x =', testX, 'y = 55');
                 break;
             }
         }
         
-        this.position = new Vec3(bestSpawnX, spawnY, 0);
-        console.log('Player spawned at:', this.position);
+        this.position = new Vec2(bestSpawnX, spawnY);
     }
     
     setupEventListeners() {
@@ -44,7 +42,6 @@ class Player {
             // Toggle wall mining with T key
             if (e.code === 'KeyT') {
                 this.wallMiningEnabled = !this.wallMiningEnabled;
-                console.log('Wall mining:', this.wallMiningEnabled ? 'ENABLED' : 'DISABLED');
             }
         });
         
@@ -124,7 +121,6 @@ class Player {
             for (let checkY = minY; checkY <= maxY; checkY++) {
                 if (world.getBlock(checkX, checkY, 0) > 0) {
                     world.setBlock(checkX, checkY, 0, 0); // Break the block
-                    console.log('Block broken by walking at:', checkX, checkY);
                 }
             }
         }
@@ -173,11 +169,11 @@ class Player {
         if (blockType > 0) {
             return {
                 hit: true,
-                position: new Vec3(worldX, worldY, 0),
+                position: new Vec2(worldX, worldY),
                 distance: Math.sqrt((worldX - this.position.x) ** 2 + (worldY - this.position.y) ** 2)
             };
         }
         
-        return { hit: false, position: new Vec3(worldX, worldY, 0) };
+        return { hit: false, position: new Vec2(worldX, worldY) };
     }
 }

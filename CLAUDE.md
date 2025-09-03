@@ -12,7 +12,7 @@ This is a vanilla JavaScript project without a build system. To develop:
 
 1. **Local Development**: Open `index.html` directly in a browser or serve via any HTTP server
 2. **Testing**: No automated tests - test manually by opening the game in browser
-3. **Live Server**: Use `python -m http.server 8000` or any static server for development
+3. **Live Server**: Use `npx http-server . -p 8000` or any static server for development
 
 ## Architecture
 
@@ -36,13 +36,13 @@ The game follows a modular class-based architecture with clear separation of con
   - Wall mining toggle functionality
 
 - **`js/renderer.js`**: Rendering system
-  - Canvas-based 2D isometric-style rendering
+  - Canvas-based 2D rendering with clean solid blocks
   - Camera system following player
-  - Block type visual differentiation
+  - Optimized sparkle effects for logo screen
 
 - **`js/math.js`**: Vector mathematics utilities
-  - Vec3 class for 3D coordinate handling
-  - Mathematical operations for game physics
+  - Vec2 class for 2D coordinate handling
+  - Basic vector operations (add, subtract, scale)
 
 - **`js/logo-patterns.js`**: Interactive logo screen
   - Animated logo display with credit system
@@ -50,9 +50,9 @@ The game follows a modular class-based architecture with clear separation of con
 
 ### Key Architecture Patterns
 
-**Coordinate System**: Uses a 3D coordinate system (x, y, z) with y-axis as height, rendered in 2D isometric view.
+**Coordinate System**: Uses a 2D coordinate system (x, y) with y-axis as height, rendered in 2D side-view.
 
-**Block Management**: World uses Map-based storage with string keys (`"x,y,z"`) for efficient block lookup and modification.
+**Block Management**: World uses Map-based storage with string keys (`"x,y,0"`) for efficient block lookup and modification.
 
 **Game States**: State machine pattern managing logo screen vs. gameplay modes.
 
@@ -71,22 +71,18 @@ The game supports 18 different block types (1-18):
 ```
 /
 ├── index.html          # Main HTML entry point
-├── debug.html          # Debug version with additional logging
-├── js/
-│   ├── game.js         # Main game controller
-│   ├── world.js        # World generation and block management
-│   ├── player.js       # Player mechanics and controls
-│   ├── renderer.js     # Canvas rendering system
-│   ├── math.js         # Vector math utilities
-│   └── logo-patterns.js # Logo screen functionality
-└── public/
-    ├── index.html      # GitHub Pages deployment version
-    └── js/             # Symlinked JS files for deployment
+└── js/
+    ├── game.js         # Main game controller
+    ├── world.js        # World generation and block management
+    ├── player.js       # Player mechanics and controls
+    ├── renderer.js     # Canvas rendering system
+    ├── math.js         # Vector math utilities (Vec2)
+    └── logo-patterns.js # Logo screen functionality
 ```
 
 ## Development Notes
 
 - **No Build System**: Direct script includes, edit files and refresh browser
 - **Vanilla JavaScript**: ES6 classes, no frameworks or external dependencies
-- **Canvas Rendering**: Custom 2D isometric renderer without WebGL
-- **GitHub Pages**: Deployed automatically from `/public` directory
+- **Canvas Rendering**: Optimized 2D renderer with solid block rendering and efficient sparkle effects
+- **Single Source**: Simplified from duplicate file structure to single source of truth
