@@ -12,6 +12,12 @@ class Player {
         this.direction = 1; // 1 for right, -1 for left
         this.wallMiningEnabled = true; // Toggle for walking through walls
         
+        // Touch controls
+        this.touchActive = false;
+        this.touchPosition = null;
+        this.canvas = null; // Will be set by game
+        this.renderer = null; // Will be set by game
+        
         this.setupEventListeners();
     }
     
@@ -35,6 +41,11 @@ class Player {
         this.position = new Vec2(bestSpawnX, spawnY);
     }
     
+    setCanvasAndRenderer(canvas, renderer) {
+        this.canvas = canvas;
+        this.renderer = renderer;
+    }
+    
     setupEventListeners() {
         document.addEventListener('keydown', (e) => {
             this.keys[e.code.toLowerCase()] = true;
@@ -48,22 +59,84 @@ class Player {
         document.addEventListener('keyup', (e) => {
             this.keys[e.code.toLowerCase()] = false;
         });
+        
+        // Touch event listeners
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                this.touchActive = true;
+                this.touchPosition = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
+            }
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length > 0 && this.touchActive) {
+                this.touchPosition = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
+            }
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.touchActive = false;
+            this.touchPosition = null;
+        });
+    }
+    
+    convertTouchToWorldCoords(touchX, touchY) {
+        if (!this.canvas || !this.renderer) return null;
+        
+        const blockSize = this.renderer.blockSize;
+        const camera = this.renderer.camera;
+        
+        const worldX = (touchX + camera.x) / blockSize;
+        const worldY = (this.canvas.height - touchY + camera.y) / blockSize;
+        
+        return new Vec2(worldX, worldY);
     }
     
     update(deltaTime, world) {
         this.velocity.y += this.gravity * deltaTime;
         
-        if (this.keys['keya'] || this.keys['arrowleft']) {
+        // Handle touch controls
+        let touchLeft = false;
+        let touchRight = false;
+        let touchUp = false;
+        
+        if (this.touchActive && this.touchPosition && this.canvas) {
+            const worldTouch = this.convertTouchToWorldCoords(this.touchPosition.x, this.touchPosition.y);
+            if (worldTouch) {
+                // Determine movement direction based on touch position relative to player
+                if (worldTouch.x < this.position.x) {
+                    touchLeft = true;
+                } else if (worldTouch.x > this.position.x) {
+                    touchRight = true;
+                }
+                
+                // If touch is in upper half of screen, activate jetpack
+                if (this.touchPosition.y < this.canvas.height / 2) {
+                    touchUp = true;
+                }
+            }
+        }
+        
+        if (this.keys['keya'] || this.keys['arrowleft'] || touchLeft) {
             this.velocity.x = -this.speed;
             this.direction = -1;
-        } else if (this.keys['keyd'] || this.keys['arrowright']) {
+        } else if (this.keys['keyd'] || this.keys['arrowright'] || touchRight) {
             this.velocity.x = this.speed;
             this.direction = 1;
         } else {
             this.velocity.x *= 0.8;
         }
         
-        if (this.keys['space'] || this.keys['arrowup']) {
+        if (this.keys['space'] || this.keys['arrowup'] || touchUp) {
             this.velocity.y = this.jetpackPower;
         } else if ((this.keys['keyw']) && this.onGround) {
             this.velocity.y = this.jumpPower;

@@ -5,6 +5,7 @@ class Game {
         this.world = new World();
         this.logoWorld = null; // Will be initialized when needed
         this.player = new Player();
+        this.player.setCanvasAndRenderer(this.canvas, this.renderer);
         this.lastTime = 0;
         this.isRunning = false;
         this.selectedBlockType = 1;
