@@ -108,6 +108,7 @@ class Player {
         let touchLeft = false;
         let touchRight = false;
         let touchUp = false;
+        let touchMine = false;
         
         if (this.touchActive && this.touchPosition && this.canvas) {
             const worldTouch = this.convertTouchToWorldCoords(this.touchPosition.x, this.touchPosition.y);
@@ -122,6 +123,9 @@ class Player {
                 // If touch is in upper half of screen, activate jetpack
                 if (this.touchPosition.y < this.canvas.height / 2) {
                     touchUp = true;
+                } else {
+                    // If touch is in lower half, enable mining
+                    touchMine = true;
                 }
             }
         }
@@ -143,7 +147,7 @@ class Player {
             this.onGround = false;
         }
         
-        if (this.keys['keys'] || this.keys['arrowdown']) {
+        if (this.keys['keys'] || this.keys['arrowdown'] || touchMine) {
             this.mineBlockBelow(world);
         }
         
