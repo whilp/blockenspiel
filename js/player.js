@@ -113,11 +113,17 @@ class Player {
         if (this.touchActive && this.touchPosition && this.canvas) {
             const worldTouch = this.convertTouchToWorldCoords(this.touchPosition.x, this.touchPosition.y);
             if (worldTouch) {
-                // Determine movement direction based on touch position relative to player
-                if (worldTouch.x < this.position.x) {
-                    touchLeft = true;
-                } else if (worldTouch.x > this.position.x) {
-                    touchRight = true;
+                // Create a dead zone for straight down mining (0.5 block radius)
+                const horizontalDistance = Math.abs(worldTouch.x - this.position.x);
+                const deadZone = 0.5;
+                
+                // Only trigger left/right movement if outside dead zone
+                if (horizontalDistance > deadZone) {
+                    if (worldTouch.x < this.position.x) {
+                        touchLeft = true;
+                    } else if (worldTouch.x > this.position.x) {
+                        touchRight = true;
+                    }
                 }
                 
                 // If touch is in upper half of screen, activate jetpack
