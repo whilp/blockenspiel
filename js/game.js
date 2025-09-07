@@ -22,6 +22,10 @@ class Game {
         this.player.findSafeSpawnPosition(this.world);
         
         this.setupEventListeners();
+        
+        // Initialize menu system
+        this.menu = new Menu(this);
+        
         this.start();
     }
     
@@ -181,10 +185,10 @@ class Game {
         
         if (biomeElement) {
             if (this.currentState === this.GAME_STATES.LOGO_SCREEN) {
-                biomeElement.textContent = `LOGO SCREEN | Press 'L' or ESC to return | Block: ${this.selectedBlockType}`;
+                biomeElement.textContent = `Logo/Credits World | Block: ${this.selectedBlockType}`;
             } else {
                 const wallMiningStatus = this.player.wallMiningEnabled ? 'ON' : 'OFF';
-                biomeElement.textContent = `Block: ${this.selectedBlockType} | On Ground: ${this.player.onGround} | Wall Mining: ${wallMiningStatus}  | Press 'L' for Logo`;
+                biomeElement.textContent = `Main Game | Block: ${this.selectedBlockType} | Wall Mining: ${wallMiningStatus}`;
             }
         }
     }
